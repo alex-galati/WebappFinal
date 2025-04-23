@@ -10,11 +10,31 @@
 
 from app import db                                                        
 
-# Example class
-class User(db.Model):
+class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=False, nullable=False)
+    game_id = db.Column(db.String(16), nullable=False)
+    players = db.relationship('Player', backref='game', lazy=True)
+
+    def serialize(self):
+            return {
+                'id': self.id,
+                'game_id': self.game_id,
+            }
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f'<Game id={self.id}>'
+
+class Player(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), nullable=False)
+    game_id = db.Column(db.String(16), db.ForeignKey('game.game_id'), nullable=False)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'game_id': self.game.serialize()
+        }
+
+    def __repr__(self):
+        return f'<Player id={self.id}>'

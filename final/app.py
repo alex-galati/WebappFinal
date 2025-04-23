@@ -12,7 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = sqlite_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-from models import User
+from models import Game, Player
 
 with app.app_context():
     db.create_all()
@@ -23,10 +23,21 @@ def index():
 
 @app.route('/join/<game_id>/', methods=['GET'])
 def join(game_id):
+    game = Game.query.filter_by(game_id=game_id).first()
+    if not game:
+        return render_template('root.html', message="Room does not exist.")
     return render_template('game.html', game_id=game_id) 
 
 @app.route('/new/')
 def new_game():
     length = 16
-    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-    return redirect(url_for('join', game_id=random_string)) 
+    game_id = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    
+    while Game.query.filter_by(game_id=game_id).first() is not None: #As long as the game ID already exists, re-generate room code.
+        game_id = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    
+    new_game = Game(game_id=game_id)
+    db.session.add(new_game)
+    db.session.commit()
+    
+    return redirect(url_for('join', game_id=game_id))
