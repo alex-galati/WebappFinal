@@ -4,7 +4,7 @@ import os
 import random, string
 
 app = Flask(__name__)
-app.secret_key = ''
+app.secret_key = 'thereleasedateforhollowknight:silksong'
 
 db_name = 'test.db'
 sqlite_uri = f'sqlite:///{os.path.abspath(os.path.curdir)}/{db_name}'
@@ -23,7 +23,7 @@ def index():
 
 @app.route('/join/<game_id>/', methods=['GET'])
 def join(game_id):
-    return render_template('game.html') 
+    return render_template('game.html', game_id=game_id) 
 
 @app.route('/new/')
 def new_game():
