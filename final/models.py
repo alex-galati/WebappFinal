@@ -28,12 +28,14 @@ class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False)
     game_id = db.Column(db.String(16), db.ForeignKey('game.game_id'), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
 
     def serialize(self):
         return {
             'id': self.id,
             'username': self.username,
             'game_id': self.game.serialize()
+            'score': self.score
         }
 
     def __repr__(self):
