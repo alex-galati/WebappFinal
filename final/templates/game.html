@@ -8,28 +8,21 @@
 </head>
 
 <body>
-	
-	<h1>Game ID: {{ game_id }}</h1>
-	
-	<input type="text" id="username" placeholder="Enter Username">
-	<button onclick="addPlayer()">Join</button>
+	<div>
+		<h1>Game ID: {{ game_id }}</h1>
+		
+		<input type="text" id="username" placeholder="Enter Username">
+		<button onclick="addPlayer()">Join</button>
+	</div>
 	
 	<table id="players" style="width: auto;" class="table table-sm">
 	  <thead>
 		<tr>
-		  <th scope="col">Players</th>
+		  <th scope="col">Player</th>
+		  <th scope="col">Score</th>
 		</tr>
 	  </thead>
 	  <tbody>
-		<tr>
-		  <td>Player 1</td>
-		</tr>
-		<tr>
-		  <td>Player 2</td>
-		</tr>
-		<tr>
-		  <td>Player 3</td>
-		</tr>
 	  </tbody>
 	</table>
 	

@@ -73,13 +73,13 @@ function addPlayer() { //large function for adding a player
 	}
 }
 
-socket.on('player_joined', ({ username, game_id }) => { //adds the joined player to the table on the join menu
+socket.on('player_joined', ({ username, game_id, score }) => { //adds the joined player to the table on the join menu
 	const currentGameID = window.location.pathname.split('/').filter(Boolean).pop();
 	
 	if (game_id !== currentGameID) return;
 	
 	const newRow = document.createElement('tr');
-	newRow.innerHTML = `<td>${username}</td>`;
+	newRow.innerHTML = `<td>${username}</td><td>${score}</td>`;
 	playersTable.querySelector('tbody').appendChild(newRow);
 });
 
@@ -91,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => { //adds all joined players 
 		.then(usernames => {
 			if (Array.isArray(usernames)) {
 				const tbody = playersTable.querySelector('tbody');
-				usernames.forEach(username => {
+				usernames.forEach(player => {
 					const row = document.createElement('tr');
-					row.innerHTML = `<td>${username}</td>`;
+					row.innerHTML = `<td>${player.username}</td><td>${player.score}</td>`;
 					tbody.appendChild(row);
 				});
 			}
