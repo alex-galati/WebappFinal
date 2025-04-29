@@ -34,7 +34,7 @@ class Player(db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'game_id': self.game.serialize()
+            'game_id': self.game.serialize(),
             'score': self.score
         }
 

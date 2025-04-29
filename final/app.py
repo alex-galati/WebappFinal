@@ -24,19 +24,19 @@ db = SQLAlchemy(app)
 
 socketio = SocketIO(app)
 
-questions = [
-    "1": ["Which quote is from Dr. Shepherd?", "It is unnatural to have 0 dollars, 0 beers, or 0 goldfish crackers, and I agree with that.", "If you're playing a game, you're playing Quake.", "An internship with Microsoft, that would be pretty baller, right?"], #option 1
-    "2": ["Which quote is from Dr. Shepherd?", "Remember, let bad things happen to a good person.", "Make sure you get it in there.", "Violence is fun, murder is wrong."], #option 3
-    "3": ["Which quote is from Dr. Shepherd?", "They're selling holes!", "We're nuking all the children.", "He's cheery in the moring, but needs a cheeseburger by afternoon."], #option 2
-    "4": ["Which quote is from Dr. Shepherd?", "I'm going to date all of you right now.", "Your body is a temple, stop eating markers", "To blob or not to blob? That's actually what Rene Descartes said. But it was french. le blob."], #option 3
-    "5": ["Which quote is from Dr. Shepherd?", "Send me cash, you can use me however you want. Boy, that came out wrong.", "AM I NOT A SNACK FOR YOU ALL?", "I'm the Queen."], #option 1
-    "6": ["Which quote is from Dr. Backman?", "Starts with 'ass,' ends in 'sets.' Assets.", "Ugh, you expect me to look at technology?", "I have broken it. I am a swine."], #option2
-    "7": ["Which quote is from Dr. Backman?", "Have you broke the law since we've been in this room?", "Instead of slapping clothes off them, you could slap clothes on them. ", "Thats an evil way to position a chair. I hope you stub your toe."], #option1
-    "8": ["Which quote is from Dr. Backman?", "I happen to know their flexible banana swords are quite robust.", "I'm a little masochistic these days.", "Remember, let bad things happen to good people."], #option3
-    "9": ["Which quote is from Dr. Backman?", "AM I NOT A SNACK FOR YOU ALL?", "Did anyone have the phrase 'little potato balls' on their bingo cards?", "How do I put his skin back on?"], #option 1
-    "10": ["Which quote is from Dr. Stone?", "LET ME COOK, LET ME COOK", "I'm the Queen", "You can bang a bool, but you can't negate it. "], #option 2
-    "11": ["Which quote is from Dr. Stone?", "Who's fault is that? Russia? Freaking Russia... dicks.", "Me, the non-dock painter" ,"You gonna take that? Good boy."] #option 3
-]
+questions = { #key: question, list of choices, correct answer
+    "1": ["Who said this quote: It is unnatural to have 0 dollars, 0 beers, or 0 Goldfish crackers, and I agree with that.", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Shepherd"], 
+    "2": ["Who said this quote: Ugh, you expect me to look at technology?", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Backman"],
+    "3": ["Who said this quote: Violence is fun, murder is wrong", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Shepherd"], 
+    "4": ["Who said this quote: You gonna take that? Good boy.", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Stone"],
+    "5": ["Who said this quote: We're nuking all of the children", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Shepherd"], 
+    "6": ["Who said this quote: Have you broke the law since we've been in this room?", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Backman"],
+    "7": ["Who said this quote: To blob or not to blob? That's actually what Rene Descartes said. But it was french. le blob.", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Shepherd"], 
+    "8": ["Who said this quote: AM I NOT A SNACK FOR YOU ALL?", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Backman"]
+    "9": ["Who said this quote: Send me cash, you can use me however you want. Boy, that came out wrong.", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Shepherd"],
+    "10": ["Who said this quote: I'm the Queen.", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Stone"],
+    "11": ["Who said this quote: Remember, let bad things happen to good people.", ["Dr. Backman", "Dr. Shepherd", "Dr. Stone"], "Dr. Backman"], 
+}
 
 from models import Game, Player
 
@@ -78,7 +78,7 @@ def add_player():
     if not Game.query.filter_by(game_id=game_id).first():
         return jsonify({ 'error': 'Game not found.' }), 404
         
-    new_player = Player(username=username, game_id=game_id)
+    new_player = Player(username=username, game_id=game_id, score=0)
     db.session.add(new_player)
     db.session.commit()
     
@@ -88,7 +88,7 @@ def add_player():
 def handle_player_joined(data): #player entering a username and "joining" the game
     username = data.get('username')
     game_id = data.get('game_id')
-    emit('player_joined', {'username': username, 'game_id': game_id}, to=game_id)
+    emit('player_joined', {'username': username, 'game_id': game_id, 'score': 0}, to=game_id)
     
 @socketio.on('join_game') #joining a room on socket to track all users
 def on_join(data): 
@@ -106,7 +106,7 @@ def get_players(game_id):
         return jsonify({'error': 'Game not found'}), 404
 
     players = Player.query.filter_by(game_id=game_id).all()
-    return jsonify([player.username for player in players])
+    return jsonify([{'username': player.username, 'score': player.score} for player in players])
     
 if __name__ == '__main__':
     socketio.run(app, debug=True)
