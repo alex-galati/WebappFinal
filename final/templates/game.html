@@ -8,13 +8,16 @@
 </head>
 
 <body>
-	<div>
+	<div id="pre-game">
 		<h1>Game ID: {{ game_id }}</h1>
 		
 		<input type="text" id="username" placeholder="Enter Username">
 		<button onclick="addPlayer()">Join</button>
+		<br>
+		<button onclick="startGame()">Start</button>
 	</div>
-	
+
+
 	<table id="players" style="width: auto;" class="table table-sm">
 	  <thead>
 		<tr>
@@ -25,6 +28,38 @@
 	  <tbody>
 	  </tbody>
 	</table>
+
+	<div class="collapse" id="qcard">
+	<div class="card" style="width: 18rem;">
+	<div class="card-body">
+		<h5 class="card-title" id="cardQNumber">Question #</h5>
+		<p class="card-text" id="cardQText">This is where the question text will go.</p>
+		<form id="questionForm">
+			<input class="form-check-input" type="radio" name="radioDefault" id="option1" value="Dr. Backman">
+			<label class="form-check-label" for="radioDefault1">
+			  <p id=option1text>Dr. Backman</p>
+			</label>
+			<br>
+			<input class="form-check-input" type="radio" name="radioDefault" id="option2" value="Dr. Shepherd">
+			<label class="form-check-label" for="radioDefault2">
+			  <p id=option2text>Dr. Shepherd</p>
+			</label>
+			<br>
+			<input class="form-check-input" type="radio" name="radioDefault" id="option3" value="Dr. Stone">
+			<label class="form-check-label" for="radioDefault3">
+			  <p id=option3text>Dr. Stone</p>
+			</label>
+			<br>
+			<button type="button" id="submitAnswer">Enter</button>
+		</form>
+	</div>
+	</div>
+	</div>
+
+	<!-- This should allow us to pass around the dictionary of questions -->
+	<script type="text/javascript">
+		var questionData = {{ questions | tojson }};
+	</script>
 	
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/socket.io-client@3.1.3/dist/socket.io.min.js"></script>
