@@ -4,13 +4,7 @@ from flask_socketio import SocketIO, emit, join_room
 import os 
 import random, string
 '''
-Current done:
- - Changed room code to all letters & uppercase
- - Removed placeholder players
- - Added scores to each player. *NOT ADDED SCORE TO HTML, JUST TO SCHEMA*
-  - Make questions - SHEPHERD QUOTES
-Need to do:
- - add score to HTML
+DEVELOPER'S NOTE: If all names don't appear on the scoreboard the first time, try closing the tabs and reopening them. That seems to work for some reason.
 '''
 
 app = Flask(__name__)
@@ -112,41 +106,52 @@ def get_players(game_id):
     
 @socketio.on('submit_answer')
 def handle_submit_answer(data):
-	game_id = data.get('game_id')
-	username = data.get('username')
-	question_number = str(data.get('question_number'))
-	answer = data.get('answer')
+    game_id = data.get('game_id')
+    username = data.get('username')
+    question_number = str(data.get('question_number'))
+    answer = data.get('answer')
 
-	if not all([game_id, username, question_number, answer]):
-		print("Incomplete answer submission:", data)
-		return
+    if not all([game_id, username, question_number, answer]):
+        print("Incomplete answer submission:", data)
+        return
 
-	if game_id not in active_answers:
-		active_answers[game_id] = {}
-	if question_number not in active_answers[game_id]:
-		active_answers[game_id][question_number] = {}
+    if game_id not in active_answers:
+        active_answers[game_id] = {}
+    if question_number not in active_answers[game_id]:
+        active_answers[game_id][question_number] = {}
 
-	active_answers[game_id][question_number][username] = answer
+    active_answers[game_id][question_number][username] = answer
 
-	expected_count = Player.query.filter_by(game_id=game_id).count()
-	current_count = len(active_answers[game_id][question_number])
+    expected_count = Player.query.filter_by(game_id=game_id).count()
+    current_count = len(active_answers[game_id][question_number])
 
-	print(f"[{game_id}] Q{question_number}: {current_count}/{expected_count} players answered.")
+    print(f"[{game_id}] Q{question_number}: {current_count}/{expected_count} players answered.")
 
-	if current_count == expected_count:
-		correct_answer = questions[question_number][1]
-		emit('all_answers_received', {
-			'question_number': question_number,
-			'correct_answer': correct_answer,
-			'answers': active_answers[game_id][question_number]
-		}, to=game_id)
+    if current_count == expected_count:
+        correct_answer = questions[question_number][1]
+        answer_map = active_answers[game_id][question_number]
+        updated_scores = []
+        
+        for username, user_answer in answer_map.items():
+            if user_answer == correct_answer:
+                player = Player.query.filter_by(username=username, game_id=game_id).first()
+                if player:
+                    player.score += 1
+                    db.session.commit()
+                    updated_scores.append({'username': username, 'score': player.score})
+        emit('all_answers_received', {
+            'question_number': question_number,
+            'correct_answer': correct_answer,
+            'answers': answer_map,
+            'updated_scores': updated_scores
+        }, to=game_id)
 
 @socketio.on('start_game')
 def handle_start_game(data):
-	game_id = data.get('game_id')
-	if game_id:
-		print(f"Starting game for room: {game_id}")
-		emit('start_game', {}, to=game_id)
+    game_id = data.get('game_id')
+    if game_id:
+        print(f"Starting game for room: {game_id}")
+        emit('start_game', {}, to=game_id)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

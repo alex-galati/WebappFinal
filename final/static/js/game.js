@@ -1,3 +1,4 @@
+//DEVELOPER'S NOTE: If all names don't appear on the scoreboard the first time, try closing the tabs and reopening them. That seems to work for some reason.
 const socket = io();
 
 // Join the game room as soon as game.html loads
@@ -61,25 +62,6 @@ socket.on('start_game', () => {
 	handleStartGame();
 });
 
-/*
-function nextQuestion(){
-	//const questionCardNumber = document.getElementById("cardQNumber");
-	//const questionCardTitle = document.getElementById("cardQText");
-
-	console.log(questionData);
-
-	for (var key in questionData) {
-		if (questionData.hasOwnProperty(key)) {
-			var question = questionData[key][0];
-			var answer = questionData[key][1];
-			title.innerHTML = "Question #";
-			var content = card.querySelector('.card-text');
-			content.innerHTML = question;
-
-		}
-	}
-}
-*/
 function nextQuestion() {
 	const card = document.getElementById("qcard");
 	const title = card.querySelector('.card-title');
@@ -90,29 +72,25 @@ function nextQuestion() {
 
 	title.innerHTML = `Question #${currentQuestion}`;
 	content.innerHTML = question;
-
-	// Clear previously selected radio buttons
-	document.querySelectorAll('input[name="radioDefault"]').forEach(r => r.checked = false);
+	
+	document.querySelectorAll('input[name="radioDefault"]').forEach(r => r.checked = false); //clearing previously selected radio buttons for the next question
 }
 
-if (currentGameId && currentGameId.length === 16){
-		document.getElementById('submitAnswer').addEventListener('click', function() {
-	const selectedOption = document.querySelector('input[name="radioDefault"]:checked');
-	if (!selectedOption) {
-		alert("Please select an answer.");
-		return;
-	}
-
-	const userAnswer = selectedOption.value;
-	socket.emit('submit_answer', {
-		game_id: currentGameId,
-		username: currentUsername,
-		question_number: currentQuestion,
-		answer: userAnswer
+if (currentGameId && currentGameId.length === 16) {
+	document.getElementById('submitAnswer').addEventListener('click', function() {
+		const selectedOption = document.querySelector('input[name="radioDefault"]:checked');
+		if (!selectedOption) {
+			alert("Please select an answer.");
+			return;
+		}
+		const userAnswer = selectedOption.value;
+		socket.emit('submit_answer', {
+			game_id: currentGameId,
+			username: currentUsername,
+			question_number: currentQuestion,
+			answer: userAnswer
+		});
 	});
-
-	});
-
 }
 
 if (joinForm) { //add an event listener to grab the game id for joining a game
@@ -173,19 +151,58 @@ socket.on('player_joined', ({ username, game_id, score }) => { //adds the joined
 	playersTable.querySelector('tbody').appendChild(newRow);
 });
 
-socket.on('all_answers_received', (data) => {
-	const { correct_answer, answers, question_number } = data;
+socket.on('all_answers_received', (data) => { //function to check if all players have answered the current question
+	const { correct_answer, answers, question_number, updated_scores } = data;
 
-	// Highlight correct answer
-	alert(`Correct answer: ${correct_answer}`);
+	alert(`Correct answer: ${correct_answer}`); //popup with correct answer
 
-	// You can also show a leaderboard or per-player feedback here
-
+	updated_scores.forEach(({ username, score }) => { 
+		const rows = playersTable.querySelectorAll('tbody tr');
+		rows.forEach(row => {
+			const nameCell = row.children[0];
+			if (nameCell.textContent === username) {
+				row.children[1].textContent = score;
+			}
+		});
+	});	
+	
+	const tbody = playersTable.querySelector('tbody'); //sorting tables by descending scores.
+	const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+	
+	rowsArray.sort((a, b) => {
+		const scoreA = parseInt(a.children[1].textContent, 10);
+		const scoreB = parseInt(b.children[1].textContent, 10);
+		return scoreB - scoreA
+	});
+	
+	rowsArray.forEach(row => tbody.appendChild(row));
+	
 	currentQuestion++;
 	if (questionData[currentQuestion.toString()]) {
 		nextQuestion();
-	} else {
-		alert("Game over!");
+	} else { //If no more questions, remove question card and show the game over card
+		document.getElementById('qcard').classList.remove('show');
+		document.getElementById('qcard').classList.add('hidden');
+		
+		const gameOverScreen = document.getElementById('gcard');
+		gameOverScreen.style.display = 'block';
+		
+		const rows = playersTable.querySelectorAll('tbody tr');
+		let topPlayer = null;
+		let topScore = -1;
+		
+		rows.forEach(row => {
+			const username = row.children[0].textContent;
+			const score = parseInt(row.children[1].textContent, 10);
+			if (score > topScore) {
+				topScore = score;
+				topPlayer = username
+			}
+		});
+		const winnerText = document.getElementById('winnerText');
+		if (topPlayer) {
+			winnerText.textContent = `The winner is ${topPlayer} with ${topScore} point(s)!`;
+		}
 	}
 });
 
@@ -203,6 +220,11 @@ document.addEventListener('DOMContentLoaded', () => { //adds all joined players 
 					row.innerHTML = `<td>${player.username}</td><td>${player.score}</td>`;
 					tbody.appendChild(row);
 				});
+				
+				const sortedRows = Array.from(tbody.querySelectorAll('tr')).sort((a, b) => { //sort by descending score upon loading the DOM
+					return parseInt(b.children[1].textContent) - parseInt(a.children[1].textContent);
+				});
+				sortedRows.forEach(row => tbody.appendChild(row));
 			}
 		})
 		.catch(err => console.error("Failed to fetch players:", err));

@@ -1,6 +1,6 @@
 <!doctype html>
 <html>
-
+<!-- DEVELOPER'S NOTE: If all names don't appear on the scoreboard the first time, try closing the tabs and reopening them. That seems to work for some reason. -->
 <head>
   <title>game</title>
 
@@ -30,30 +30,36 @@
 	</table>
 
 	<div class="collapse" id="qcard">
-	<div class="card" style="width: 18rem;">
-	<div class="card-body">
-		<h5 class="card-title" id="cardQNumber">Question #</h5>
-		<p class="card-text" id="cardQText">This is where the question text will go.</p>
-		<form id="questionForm">
-			<input class="form-check-input" type="radio" name="radioDefault" id="option1" value="Dr. Backman">
-			<label class="form-check-label" for="radioDefault1">
-			  <p id=option1text>Dr. Backman</p>
-			</label>
-			<br>
-			<input class="form-check-input" type="radio" name="radioDefault" id="option2" value="Dr. Shepherd">
-			<label class="form-check-label" for="radioDefault2">
-			  <p id=option2text>Dr. Shepherd</p>
-			</label>
-			<br>
-			<input class="form-check-input" type="radio" name="radioDefault" id="option3" value="Dr. Stone">
-			<label class="form-check-label" for="radioDefault3">
-			  <p id=option3text>Dr. Stone</p>
-			</label>
-			<br>
-			<button type="button" id="submitAnswer">Enter</button>
-		</form>
+		<div class="card" style="width: 18rem;">
+			<div class="card-body">
+				<h5 class="card-title" id="cardQNumber">Question #</h5>
+				<p class="card-text" id="cardQText">This is where the question text will go.</p>
+				<form id="questionForm">
+					<input class="form-check-input" type="radio" name="radioDefault" id="option1" value="Dr. Backman">
+					<label class="form-check-label" for="radioDefault1">
+					  <p id=option1text>Dr. Backman</p>
+					</label>
+					<br>
+					<input class="form-check-input" type="radio" name="radioDefault" id="option2" value="Dr. Shepherd">
+					<label class="form-check-label" for="radioDefault2">
+					  <p id=option2text>Dr. Shepherd</p>
+					</label>
+					<br>
+					<input class="form-check-input" type="radio" name="radioDefault" id="option3" value="Dr. Stone">
+					<label class="form-check-label" for="radioDefault3">
+					  <p id=option3text>Dr. Stone</p>
+					</label>
+					<br>
+					<button type="button" id="submitAnswer">Enter</button>
+				</form>
+			</div>
+		</div>
 	</div>
-	</div>
+	
+	<div id="gcard" class="text-center" style="display: none; margin-top: 2rem;">
+		<h2>Game Over!</h2>
+		<p id="winnerText"></p>
+		<a href="/" class="btn btn-primary">Return to Home</a>
 	</div>
 
 	<!-- This should allow us to pass around the dictionary of questions -->
